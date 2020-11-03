@@ -1,0 +1,79 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Salamaty</title>
+  
+
+<link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <div class="w-1/2 mx-auto">
+        <!--first div is the input feed from the camera-->
+    	<!--div class="rounded-md border-1 border-gray-500 shadow-md overflow-hidden">
+            <video autoplay></video>
+        </div-->
+
+        <!-- second div is the canvas where we can plot/draw the results from the model's output (first div will be hidden ofc)-->
+        <div class="mt-8 rounded-md border-1 border-gray-500 shadow-md overflow-hidden">
+            <!--canvas width="640" height="480"></canvas-->
+			<img id="bg" class="center" src="{{ url_for('video_feed') }}">
+            <!--For using IP webcam comment line 24 and remove commenting from line 26-->
+            <!--img id="bg" class="center" src="{{ url_for('video_feed',address='192.168.8.104:8080') }}"-->
+        </div>
+    </div>
+
+
+
+
+  <script>
+  
+	
+    //constraints for the video tag --not very important
+  	const constraints = {
+            video: true
+        };
+
+    //selecting the element to output the cams feed
+    const video = document.querySelector('video');
+
+    //canvas used to actually draw used in the drawTocanvas() function
+    const inputCtx = document.querySelector('canvas').getContext( '2d' );
+
+    //main function to get the feed from the camera
+    navigator.mediaDevices.getUserMedia(constraints).
+    then((stream) => {
+        //variable stream is the input we're looking to pass to the python backend
+        video.srcObject = stream;
+
+        //TO DO: initiate an RTC peer connection (or any better solution you can find) to the python server with the value of $stream which contains the frame to be analyzed, this connection should be kept alive obiously that's why we're looking into webRTC
+
+
+        //at the end call drawToCanvas with the output from the python server
+        drawToCanvas();
+    });
+
+    function drawToCanvas() {
+
+        // draw the current frame of localVideo onto the canvas,
+        // starting at 0, 0 (top-left corner) and covering its full
+        // width and height
+        inputCtx.drawImage( video, 0, 0, 640, 470 );
+
+        inputCtx.beginPath();
+        inputCtx.lineWidth = "6";
+        inputCtx.strokeStyle = "green";
+        inputCtx.rect(100, 80, 400, 350);
+        inputCtx.stroke();
+
+        //repeat this every time a new frame becomes available using
+        //the browser's build-in requestAnimationFrame method
+        requestAnimationFrame( drawToCanvas );
+    }
+  </script>
+</body>
+</html>
